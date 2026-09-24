@@ -1,0 +1,5 @@
+venv/
+database/
+log/
+__pycache__
+.vscode/
