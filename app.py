@@ -31,3 +31,5 @@ app.register_api(pokemon_bp)
 if __name__ == '__main__':
   run_db()
   app.run(host='0.0.0.0', port=5000, debug=True)
+
+# TODO: Do the cookies and auth
