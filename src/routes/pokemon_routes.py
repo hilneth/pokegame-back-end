@@ -15,12 +15,14 @@ from src.schemas.pokemon import (
   PokemonResponseSchema
 )
 from src.schemas.error import ErrorSchema
+from src.utils.token import validate_client
 
 pokemon_tag = Tag(name="Pokémons", description="Gerenciamento da equipe e inventário de Pokémons")
 pokemon_bp = APIBlueprint('pokemon', __name__, url_prefix='/api/v1/pokemon')
 
 
 @pokemon_bp.post('/catch', tags=[pokemon_tag], responses={"201": PokemonResponseSchema, "404": ErrorSchema, "400": ErrorSchema})
+@validate_client
 def catch_pokemon(body: CatchPokemonSchema):
   """Regista a captura de um novo Pokémon para o treinador (POST)"""
   session = db_session()
@@ -59,6 +61,7 @@ def catch_pokemon(body: CatchPokemonSchema):
 
 
 @pokemon_bp.get('/trainer/<int:user_id>', tags=[pokemon_tag], responses={"200": PokemonListSchema, "404": ErrorSchema})
+@validate_client
 def list_trainer_pokemons(path: TrainerPathSchema):
   """Lista todos os Pokémons capturados de um determinado treinador (GET)"""
   user_id = path.user_id
@@ -83,6 +86,7 @@ def list_trainer_pokemons(path: TrainerPathSchema):
 
 
 @pokemon_bp.put('/update', tags=[pokemon_tag], responses={"200": PokemonResponseSchema, "404": ErrorSchema, "400": ErrorSchema})
+@validate_client
 def update_pokemon_level(body: UpdatePokemonSchema):
   """Atualiza o nível e XP de um Pokémon específico (PUT)"""
   session = db_session()
@@ -114,6 +118,7 @@ def update_pokemon_level(body: UpdatePokemonSchema):
 
 
 @pokemon_bp.delete('/<int:pokemon_id>', tags=[pokemon_tag], responses={"200": None, "404": ErrorSchema})
+@validate_client
 def release_pokemon(path: ReleasePokemonPathSchema):
   """Libera/Solta um Pokémon capturado (DELETE)"""
   session = db_session()

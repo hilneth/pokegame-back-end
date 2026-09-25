@@ -1,4 +1,5 @@
 from flask_openapi3 import APIBlueprint, Tag
+from flask import jsonify, session as token_check
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -57,12 +58,12 @@ def login(body: TrainerLoginSchema):
   if not check_password_hash(trainer.hash_password, body.password): # type: ignore
     session.close()
     return {"message": "Senha ou Usuario incorretos"}, 404
-
-  response_data = {
-    "id": trainer.id,
-    "username": trainer.username,
-    "coins": trainer.currency,
-    "current_route": trainer.last_route
-  }
+  
+  resp = jsonify({"id": trainer.id,
+      "username": trainer.username,
+      "coins": trainer.currency,
+      "current_route": trainer.last_route})
+  
+  token_check["token"] = trainer.id
   session.close()
-  return response_data, 200
+  return resp

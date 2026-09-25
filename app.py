@@ -6,6 +6,8 @@ from src.models import run_db
 from src.routes.auth_routes import auth_bp
 from src.routes.game_routes import game_bp
 from src.routes.pokemon_routes import pokemon_bp
+import os
+from datetime import timedelta
 
 info = Info(
   title="Pokémon Idle Game API",
@@ -23,6 +25,14 @@ home_tag = Tag(name="Documentação", description="Interface de documentação")
 def home():
   """Redireciona para o Swagger UI da API."""
   return redirect('/openapi')
+
+app.config.update(
+    SECRET_KEY="Secret-key",   # Já que é um projeto educional, a key será hardcoded
+    SESSION_COOKIE_SECURE=True,      
+    SESSION_COOKIE_HTTPONLY=True,    
+    SESSION_COOKIE_SAMESITE="Lax",   
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
+)
 
 app.register_api(auth_bp)
 app.register_api(game_bp)
