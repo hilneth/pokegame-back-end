@@ -1,5 +1,4 @@
-from email import message
-from http.client import responses
+from flask import session as token_check
 
 from flask_openapi3 import APIBlueprint, Tag
 
@@ -8,7 +7,6 @@ from src.models.caught_pokemons import Caught_pokemons
 from src.models.users import Users
 from src.schemas.pokemon import (
   CatchPokemonSchema,
-  TrainerPathSchema, 
   UpdatePokemonSchema, 
   ReleasePokemonPathSchema, 
   PokemonListSchema, 
@@ -26,7 +24,8 @@ pokemon_bp = APIBlueprint('pokemon', __name__, url_prefix='/api/v1/pokemon')
 def catch_pokemon(body: CatchPokemonSchema):
   """Regista a captura de um novo Pokémon para o treinador (POST)"""
   session = db_session()
-  trainer = session.query(Users).filter(Users.id == body.user_id).first()
+  user_id = token_check["token"]
+  trainer = session.query(Users).filter(Users.id == user_id).first()
 
   if not trainer:
     session.close()
@@ -36,7 +35,7 @@ def catch_pokemon(body: CatchPokemonSchema):
     user_id=body.user_id,
     pokemon_id=body.pokemon_id,
     name=body.name,
-    nickname=body.nickname or body.name.capitalize(),
+    nickname=body.name.capitalize(), # body.nickname or 
     level=5,
     experience=0
   )
@@ -60,11 +59,11 @@ def catch_pokemon(body: CatchPokemonSchema):
     session.close()
 
 
-@pokemon_bp.get('/trainer/<int:user_id>', tags=[pokemon_tag], responses={"200": PokemonListSchema, "404": ErrorSchema})
+@pokemon_bp.get('/trainer/', tags=[pokemon_tag], responses={"200": PokemonListSchema, "404": ErrorSchema})
 @validate_client
-def list_trainer_pokemons(path: TrainerPathSchema):
+def list_trainer_pokemons():
   """Lista todos os Pokémons capturados de um determinado treinador (GET)"""
-  user_id = path.user_id
+  user_id = token_check["token"]
   session = db_session()
   
   pokemons = session.query(Caught_pokemons).filter(Caught_pokemons.user_id == user_id).all() # type: ignore
@@ -76,7 +75,8 @@ def list_trainer_pokemons(path: TrainerPathSchema):
       "name": p.name,
       "nickname": p.nickname,
       "level": p.level,
-      "experience": p.experience
+      "experience": p.experience,
+      "sprite": p.sprite
     }
     for p in pokemons
   ]

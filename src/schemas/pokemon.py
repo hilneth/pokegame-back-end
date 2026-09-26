@@ -28,6 +28,7 @@ class PokemonResponseSchema(BaseModel):
   name: str = Field(description="Nome da espécie do Pokémon", default="pikachu")
   nickname: Optional[str] = Field(description="Apelido do Pokémon", default="Pika")
   level: int = Field(description="Nível do Pokémon", default=5)
+  sprite: str
   experience: int = Field(description="XP acumulado", default=100)
 
 
@@ -43,6 +44,3 @@ class GetPokemonFromAPI(BaseModel):
   base_experience: int
   sprite_front: str
   types: str
-
-class TrainerPathSchema(BaseModel):
-  user_id: int

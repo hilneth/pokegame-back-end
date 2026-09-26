@@ -1,7 +1,6 @@
 import random
 from flask_openapi3 import APIBlueprint, Tag
 from sqlalchemy import func
-from flask import session as token_check
 
 from src.models import db_session
 from src.models.users import Users
@@ -15,6 +14,7 @@ from src.schemas.pokemon import GetPokemonFromAPI
 from src.schemas.error import ErrorSchema
 from src.services.pokeapi_service import fetch_pokemon_from_pokeapi
 from src.utils.token import validate_client
+from flask import session as token_check
 
 game_tag = Tag(name="Jogo e Progresso", description="Rotas de mecânica de jogo, encontros e classificações")
 game_bp = APIBlueprint('game', __name__, url_prefix='/api/v1/game')
@@ -43,7 +43,7 @@ def leaderboard():
 @validate_client
 def wild_encounter():
   """Sorteia um Pokémon selvagem entre a Gen 1 e Gen 2 (IDs 1 a 251) consumindo a PokéAPI (GET)"""
-  random_id = random.randint(1, 251)
+  random_id = random.randint(1, 251) #TODO check by route
   pokemon_data = fetch_pokemon_from_pokeapi(random_id)
 
   if not pokemon_data:
@@ -57,7 +57,8 @@ def wild_encounter():
 def update_progress(body: UserUpdateProgressSchema):
   """Atualiza o progresso do Treinador (Moedas e Rota atual) (PUT)"""
   session = db_session()
-  user = session.query(Users).filter(Users.id == body.user_id).first()
+  user_id = token_check["token"]
+  user = session.query(Users).filter(Users.id == user_id).first()
 
   if not user:
     session.close()

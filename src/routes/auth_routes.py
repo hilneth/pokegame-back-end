@@ -3,10 +3,12 @@ from flask import jsonify, session as token_check
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from src.models import caught_pokemons
 from src.models import db_session
 from src.models.users import Users
 from src.schemas.trainer import TrainerRegisterSchema, TrainerLoginSchema, UserResponseSchema
 from src.schemas.error import ErrorSchema
+from src.routes.pokemon_routes import catch_pokemon
 
 auth_tag = Tag(name="Autenticação", description="Criação de conta e Login do Treinador")
 auth_bp = APIBlueprint('auth', __name__, url_prefix='/api/v1/auth')
@@ -31,13 +33,29 @@ def register(body: TrainerRegisterSchema):
     currency=100
   )
 
+
   try:
     session.add(new_trainer)
+    session.flush()
+
+    new_pokemon = caught_pokemons.Caught_pokemons(
+      user_id=new_trainer.id, # type: ignore
+      pokemon_id=25,
+      name="Pikachu",
+      nickname="Pikachu",
+      level=5,
+      experience=0
+    )
+    session.add(new_pokemon)
+
     session.commit()
     response_data = {
       "username": new_trainer.username,
       "coins": new_trainer.currency,
     }
+    token_check.permanent = True
+    token_check["token"] = new_trainer.id
+    
     return response_data, 201
   except Exception as e:
     session.rollback()
@@ -63,7 +81,8 @@ def login(body: TrainerLoginSchema):
       "username": trainer.username,
       "coins": trainer.currency,
       "current_route": trainer.last_route})
-  
+
+  token_check.permanent = True
   token_check["token"] = trainer.id
   session.close()
   return resp

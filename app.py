@@ -6,7 +6,6 @@ from src.models import run_db
 from src.routes.auth_routes import auth_bp
 from src.routes.game_routes import game_bp
 from src.routes.pokemon_routes import pokemon_bp
-import os
 from datetime import timedelta
 
 info = Info(
@@ -28,9 +27,9 @@ def home():
 
 app.config.update(
     SECRET_KEY="Secret-key",   # Já que é um projeto educional, a key será hardcoded
-    SESSION_COOKIE_SECURE=True,      
+    SESSION_COOKIE_SECURE=False, # Temporario para dev    
     SESSION_COOKIE_HTTPONLY=True,    
-    SESSION_COOKIE_SAMESITE="Lax",   
+    SESSION_COOKIE_SAMESITE="Lax", # Temporario para dev
     PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
 )
 
@@ -41,5 +40,3 @@ app.register_api(pokemon_bp)
 if __name__ == '__main__':
   run_db()
   app.run(host='0.0.0.0', port=5000, debug=True)
-
-# TODO: Do the cookies and auth
